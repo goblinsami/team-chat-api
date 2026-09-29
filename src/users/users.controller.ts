@@ -9,27 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { UsersService } from './users.service.js';
-import { IsEmail, IsString, MinLength, ValidateIf } from 'class-validator';
-
-export class CreateUserDto {
-  @IsString()
-  @MinLength(2)
-  name: string;
-
-  @IsEmail()
-  email: string;
-}
-
-export class UpdateUserDto {
-  @ValidateIf((_object, value) => value !== undefined)
-  @IsString()
-  @MinLength(2)
-  name?: string;
-
-  @ValidateIf((_object, value) => value !== undefined)
-  @IsEmail()
-  email?: string;
-}
+import { CreateUserDto, UpdateUserDto } from './users.dto.js';
 
 @Controller('users')
 export class UsersController {
@@ -40,10 +20,14 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(Number(id));
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.usersService.findOne(id);
   }
+
 
   @Post()
   create(@Body() body: CreateUserDto) {
@@ -56,7 +40,9 @@ export class UsersController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     return this.usersService.remove(id);
   }
 }
