@@ -7,7 +7,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service.js';
 import { CreateUserDto, UpdateUserDto } from './users.dto.js';
 
@@ -20,6 +23,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  getMe(@Req() req: any) {
+    return this.usersService.findOne(req.user.userId);
+  }
 
   @Get(':id')
   findOne(
@@ -27,7 +35,6 @@ export class UsersController {
   ) {
     return this.usersService.findOne(id);
   }
-
 
   @Post()
   create(@Body() body: CreateUserDto) {
