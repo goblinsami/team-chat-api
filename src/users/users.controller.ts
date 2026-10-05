@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Roles, RolesGuard } from '../auth/roles.decorator.js';
 import { UsersService } from './users.service.js';
 import { CreateUserDto, UpdateUserDto } from './users.dto.js';
 
@@ -30,9 +31,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
 
@@ -46,10 +45,10 @@ export class UsersController {
     return this.usersService.update(id, body);
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN')
   @Delete(':id')
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.remove(id);
   }
 }

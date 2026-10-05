@@ -10,4 +10,7 @@
  */
 export type * from './models/User.js'
 export type * from './models/Message.js'
+export type * from './models/Channel.js'
+export type * from './models/Workspace.js'
+export type * from './models/WorkspaceMember.js'
 export type * from './commonInputTypes.js'

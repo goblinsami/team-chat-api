@@ -7,23 +7,65 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
-  createdAt DateTime  @default(now())
+enum Role {
+  MEMBER
+  ADMIN
+  OWNER
+}
 
-  messages Message[]
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+
+  memberships WorkspaceMember[]
+  messages    Message[]
 }
 
 model Message {
   id        Int      @id @default(autoincrement())
   text      String
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  createdAt DateTime @default(now())
 
-  userId Int  @map("user_id")
-  user   User @relation(fields: [userId], references: [id])
+  userId    Int
+  channelId Int
 
-  @@map("messages")
+  user    User    @relation(fields: [userId], references: [id])
+  channel Channel @relation(fields: [channelId], references: [id])
+}
+
+model Channel {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+
+  workspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  messages Message[]
+}
+
+model Workspace {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+
+  members  WorkspaceMember[]
+  channels Channel[]
+}
+
+model WorkspaceMember {
+  id   Int  @id @default(autoincrement())
+  role Role @default(MEMBER)
+
+  userId      Int
+  workspaceId Int
+
+  user      User      @relation(fields: [userId], references: [id])
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([userId, workspaceId])
 }

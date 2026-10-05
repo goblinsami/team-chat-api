@@ -27,3 +27,18 @@ export type User = Prisma.UserModel
  * 
  */
 export type Message = Prisma.MessageModel
+/**
+ * Model Channel
+ * 
+ */
+export type Channel = Prisma.ChannelModel
+/**
+ * Model Workspace
+ * 
+ */
+export type Workspace = Prisma.WorkspaceModel
+/**
+ * Model WorkspaceMember
+ * 
+ */
+export type WorkspaceMember = Prisma.WorkspaceMemberModel
