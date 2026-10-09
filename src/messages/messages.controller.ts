@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -31,7 +32,14 @@ export class MessagesController {
   findAll(
     @Param('channelId', ParseIntPipe) channelId: number,
     @Req() req: any,
+    @Query('cursor') cursor?: string,
+    @Query('take') take?: string,
   ) {
-    return this.messagesService.findAll(channelId, req.user.userId);
+    return this.messagesService.findAll(
+      channelId,
+      req.user.userId,
+      cursor ? Number(cursor) : undefined,
+      take ? Number(take) : 20,
+    );
   }
 }
