@@ -22,5 +22,6 @@ import { RolesGuard } from './roles.decorator.js';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, RolesGuard],
+  exports: [JwtModule],
 })
 export class AuthModule {}

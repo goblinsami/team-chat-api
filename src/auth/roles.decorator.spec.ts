@@ -4,7 +4,7 @@ import { RolesGuard } from './roles.decorator.js';
 
 describe('RolesGuard', () => {
   const reflector = {
-    getAllAndOverride: vi.fn(() => ['ADMIN']),
+    get: vi.fn(() => ['ADMIN']),
   } as unknown as Reflector;
   const guard = new RolesGuard(reflector);
 
@@ -13,7 +13,7 @@ describe('RolesGuard', () => {
       getHandler: () => undefined,
       getClass: () => undefined,
       switchToHttp: () => ({
-        getRequest: () => ({ user: role ? { role } : {} }),
+        getRequest: () => ({ user: role ? { role } : undefined }),
       }),
     } as unknown as ExecutionContext;
   }

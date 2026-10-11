@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service.js';
 import { WorkspaceAccessService } from '../workspace-access/workspace-access.service.js';
@@ -48,6 +48,12 @@ export class MessagesService {
   }
 
   async findAll(channelId: number, userId: number, cursor?: number, take = 20) {
+    if (!Number.isSafeInteger(take) || take < 1 || take > 100) {
+      throw new BadRequestException('take must be an integer between 1 and 100');
+    }
+    if (cursor !== undefined && (!Number.isSafeInteger(cursor) || cursor < 1)) {
+      throw new BadRequestException('cursor must be a positive integer');
+    }
     const channel = await this.prisma.channel.findUnique({
       where: { id: channelId },
     });
@@ -63,7 +69,7 @@ export class MessagesService {
         channelId,
       },
 
-      take,
+      take: take + 1,
 
       ...(cursor && {
         cursor: {
@@ -87,11 +93,12 @@ export class MessagesService {
       },
     });
 
+    const data = messages.slice(0, take);
     const nextCursor =
-      messages.length === take ? messages[messages.length - 1].id : null;
+      messages.length > take ? data[data.length - 1].id : null;
 
     return {
-      data: messages,
+      data,
       nextCursor,
     };
   }

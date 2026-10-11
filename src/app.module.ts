@@ -1,3 +1,4 @@
+import { RedisModule } from './redis/redis.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -18,6 +19,7 @@ import { MessagesModule } from './messages/messages.module.js';
     WorkspacesModule,
     ChannelsModule,
     MessagesModule,
+    RedisModule,
   ],
 })
 export class AppModule {}

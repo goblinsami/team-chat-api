@@ -14,14 +14,23 @@ import { AuthGuard } from '@nestjs/passport';
 import { Roles, RolesGuard } from '../auth/roles.decorator.js';
 import { UsersService } from './users.service.js';
 import { CreateUserDto, UpdateUserDto } from './users.dto.js';
-
+import { RedisService } from '../redis/redis.service.js';
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
-
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly redis: RedisService,
+  ) {}
   @Get()
   findAll() {
     return this.usersService.findAll();
+  }
+  @Get(':id/online')
+  async isOnline(@Param('id', ParseIntPipe) id: number) {
+    return {
+      userId: id,
+      online: await this.redis.isUserOnline(id),
+    };
   }
 
   @Get('me')
