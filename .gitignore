@@ -2,6 +2,12 @@
 /dist
 /node_modules
 /build
+/backend/dist
+/backend/node_modules
+/backend/build
+/backend/generated
+/backend/coverage
+/backend/.nyc_output
 
 # TypeScript build cache
 *.tsbuildinfo

@@ -11,6 +11,9 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
       - name: Checkout
@@ -26,6 +29,8 @@ jobs:
 
       - name: Generate Prisma client
         run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://build:build@localhost:5432/build
 
       - name: Run tests
         run: npm test -- --run
