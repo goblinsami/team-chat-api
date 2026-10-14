@@ -32,10 +32,16 @@ export class MessagesGateway
   ) {}
 
   async handleConnection(client: Socket) {
+    client.data.ready = this.authenticate(client);
+    await client.data.ready;
+  }
+
+  private async authenticate(client: Socket) {
     try {
-      const token = client.handshake.auth.token;
+      const token = client.handshake.auth.ticket ?? client.handshake.auth.token;
 
       const payload = await this.jwtService.verifyAsync(token);
+      if (!Number.isSafeInteger(payload.sub) || (payload.purpose && payload.purpose !== 'socket')) throw new Error('Invalid token');
 
       client.data.user = {
         userId: payload.sub,
@@ -61,6 +67,10 @@ export class MessagesGateway
     @MessageBody() channelId: number,
     @ConnectedSocket() client: Socket,
   ) {
+    await client.data.ready;
+    if (!client.data.user || !Number.isSafeInteger(channelId) || channelId < 1) {
+      return { success: false, message: 'Invalid channel or session' };
+    }
     const channel = await this.prisma.channel.findUnique({
       where: {
         id: channelId,
@@ -74,10 +84,11 @@ export class MessagesGateway
       };
     }
 
-    await this.workspaceAccess.getMembership(
-      client.data.user.userId,
-      channel.workspaceId,
-    );
+    try {
+      await this.workspaceAccess.getMembership(client.data.user.userId, channel.workspaceId);
+    } catch {
+      return { success: false, message: 'You are not a member of this workspace' };
+    }
 
     await client.join(`channel:${channelId}`);
 

@@ -1,17 +1,63 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 export default function AuthPage() {
+  const router = useRouter();
   const [isRegister, setIsRegister] = useState(false);
+  const [email, setEmail] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending) return;
+    const form = event.currentTarget;
+    const fields = new FormData(form);
+    setPending(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch(`/api/auth/${isRegister ? "register" : "login"}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: fields.get("password"), ...(isRegister ? { name: fields.get("name") } : {}) }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || "No se pudo completar la solicitud.");
+        return;
+      }
+      form.reset();
+      setMessage(data.message);
+      if (isRegister) setIsRegister(false);
+      else {
+        router.replace("/dashboard");
+        router.refresh();
+      }
+    } catch {
+      setError("No se pudo conectar. Inténtalo de nuevo.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  function switchForm(register: boolean) {
+    setIsRegister(register);
+    setError("");
+    setMessage("");
+  }
   return (
     <main>
       <h1>Accede a Team Chat</h1>
-      <p>El acceso estará disponible próximamente.</p>
+      {error && <p role="alert">{error}</p>}
+      {message && <p role="status">{message}</p>}
       {!isRegister ? (
       <section aria-labelledby="login-title">
         <h2 id="login-title">Iniciar sesión</h2>
-        <form>
+        <form onSubmit={submit}>
           <p>
             <label htmlFor="login-email">Email</label>{" "}
             <input
@@ -19,6 +65,8 @@ export default function AuthPage() {
               name="email"
               type="email"
               autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
           </p>
@@ -32,19 +80,19 @@ export default function AuthPage() {
               required
             />
           </p>
-          <button type="submit" disabled>
-            Iniciar sesión
+          <button type="submit" disabled={pending}>
+            {pending ? "Enviando…" : "Iniciar sesión"}
           </button>
         </form>
         <p>
           ¿No tienes cuenta?{" "}
-          <button type="button" onClick={() => setIsRegister(true)}>Registrarse</button>
+          <button type="button" disabled={pending} onClick={() => switchForm(true)}>Registrarse</button>
         </p>
       </section>
       ) : (
       <section aria-labelledby="register-title">
         <h2 id="register-title">Registrarse</h2>
-        <form>
+        <form onSubmit={submit}>
           <p>
             <label htmlFor="register-name">Nombre</label>{" "}
             <input
@@ -61,6 +109,8 @@ export default function AuthPage() {
               name="email"
               type="email"
               autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
           </p>
@@ -75,13 +125,13 @@ export default function AuthPage() {
               required
             />
           </p>
-          <button type="submit" disabled>
-            Crear cuenta
+          <button type="submit" disabled={pending}>
+            {pending ? "Enviando…" : "Crear cuenta"}
           </button>
         </form>
         <p>
           ¿Ya tienes cuenta?{" "}
-          <button type="button" onClick={() => setIsRegister(false)}>Iniciar sesión</button>
+          <button type="button" disabled={pending} onClick={() => switchForm(false)}>Iniciar sesión</button>
         </p>
       </section>
       )}

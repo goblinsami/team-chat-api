@@ -47,4 +47,10 @@ export class AuthService {
       accessToken,
     };
   }
+
+  async socketTicket(userId: number) {
+    return {
+      ticket: await this.jwtService.signAsync({ sub: userId, purpose: 'socket' }, { expiresIn: '60s' }),
+    };
+  }
 }
